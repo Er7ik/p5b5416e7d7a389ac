@@ -17,6 +17,16 @@ self.addEventListener('fetch', e => {
     }));
     return;
   }
+  if (u.hostname === 'upload.wikimedia.org' || u.hostname === 'thumb.wikimedia.org') {
+    e.respondWith(caches.open('images-v1').then(async c => {
+      const hit = await c.match(r);
+      if (hit) return hit;
+      const res = await fetch(r);
+      c.put(r, res.clone());
+      return res;
+    }));
+    return;
+  }
   if (u.origin === location.origin && r.mode === 'navigate') {
     e.respondWith(fetch(r).then(res => { const copy = res.clone(); caches.open(PAGE).then(c => c.put('./', copy)); return res; }).catch(() => caches.match('./')));
   }
